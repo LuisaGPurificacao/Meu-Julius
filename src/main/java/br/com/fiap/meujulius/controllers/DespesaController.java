@@ -2,7 +2,6 @@ package br.com.fiap.meujulius.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +17,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.fiap.meujulius.exceptions.RestNotFoundException;
 import br.com.fiap.meujulius.models.Despesa;
 import br.com.fiap.meujulius.repository.DespesaRepository;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/despesas")
@@ -38,7 +39,7 @@ public class DespesaController {
     }
 
     @PostMapping
-    public ResponseEntity<Despesa> create(@RequestBody Despesa despesa){
+    public ResponseEntity<Despesa> create(@RequestBody @Valid Despesa despesa){
         log.info("cadastrando despesa: " + despesa);
         repository.save(despesa);
         return ResponseEntity.status(HttpStatus.CREATED).body(despesa);
@@ -47,30 +48,30 @@ public class DespesaController {
     @GetMapping("{id}")
     public ResponseEntity<Object> show(@PathVariable Long id){
         log.info("buscando despesa com id " + id);
-        Optional<Despesa> optionalDespesa = repository.findById(id);
-        if (optionalDespesa.isEmpty())
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Despesa não encontrada");
-        return ResponseEntity.ok(optionalDespesa.get());
+        var despesa = getDespesa(id);
+        return ResponseEntity.ok(despesa);
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<Object> destroy(@PathVariable Long id){
         log.info("apagando despesa com id " + id);
-        if (!repository.existsById(id))
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Despesa não encontrada");
+        getDespesa(id);
         repository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Object> update(@PathVariable Long id, @RequestBody Despesa despesa){
+    public ResponseEntity<Object> update(@PathVariable Long id, @RequestBody @Valid Despesa despesa){
         log.info("atualizando despesa com id " + id);
-        Optional<Despesa> optionalDespesa = repository.findById(id);;
-        if (optionalDespesa.isEmpty())
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Despesa não encontrada");
+        getDespesa(id);
         despesa.setId(id);
         repository.save(despesa);       
         return ResponseEntity.ok(despesa);
+    }
+
+    private Despesa getDespesa(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RestNotFoundException("despesa não encontrada"));
     }
 
 }
