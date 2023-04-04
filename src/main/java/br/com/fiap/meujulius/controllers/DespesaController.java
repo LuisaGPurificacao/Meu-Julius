@@ -1,6 +1,5 @@
 package br.com.fiap.meujulius.controllers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -28,8 +27,6 @@ public class DespesaController {
 
     Logger log = LoggerFactory.getLogger(DespesaController.class);
     
-    List<Despesa> despesas = new  ArrayList<>();
-
     @Autowired
     DespesaRepository repository;
 
