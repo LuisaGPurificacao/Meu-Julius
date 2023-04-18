@@ -2,6 +2,7 @@ package br.com.fiap.meujulius.models;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
@@ -25,7 +26,7 @@ public class Conta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nome;
-    @JsonProperty(access = Access.WRITE_ONLY, value = "saldo_inicial")
+    @JsonAlias("saldo_inicial")
     private BigDecimal saldoInicial;
     private String icone;
 

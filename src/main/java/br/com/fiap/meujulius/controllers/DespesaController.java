@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,26 +35,30 @@ public class DespesaController {
     @Autowired
     DespesaRepository repository;
 
+    @Autowired
+    PagedResourcesAssembler<Despesa> assembler;
+
     @GetMapping
-    public Page<Despesa> index(@RequestParam(required = false) String descricao, @PageableDefault(size = 10, page = 0) Pageable pageable){
+    public PagedModel<EntityModel<Despesa>> index(@RequestParam(required = false) String descricao, @PageableDefault(size = 5, page = 0) Pageable pageable){
         log.info(descricao);
-        if (descricao == null)
-            return repository.findAll(pageable);
-        return repository.findByDescricaoContaining(descricao, pageable);
+        Page<Despesa> despesas = (descricao == null) ?
+            repository.findAll(pageable):
+            repository.findByDescricaoContaining(descricao, pageable);
+    
+        return assembler.toModel(despesas);
     }
 
     @PostMapping
     public ResponseEntity<Despesa> create(@RequestBody @Valid Despesa despesa){
         log.info("cadastrando despesa: " + despesa);
         repository.save(despesa);
-        return ResponseEntity.status(HttpStatus.CREATED).body(despesa);
+        return ResponseEntity.created(despesa.toEntityModel().getRequiredLink("self").toUri()).body(despesa);
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Object> show(@PathVariable Long id){
+    public EntityModel<Despesa> show(@PathVariable Long id){
         log.info("buscando despesa com id " + id);
-        var despesa = getDespesa(id);
-        return ResponseEntity.ok(despesa);
+        return getDespesa(id).toEntityModel();
     }
 
     @DeleteMapping("{id}")

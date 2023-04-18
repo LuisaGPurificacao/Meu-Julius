@@ -3,6 +3,13 @@ package br.com.fiap.meujulius.models;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+
+import br.com.fiap.meujulius.controllers.ContaController;
+import br.com.fiap.meujulius.controllers.DespesaController;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,24 +29,33 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Despesa {
+public class Despesa extends EntityModel<Despesa> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Min(value = 0, message = "deve ser positivo") 
+    @Min(value = 0, message = "deve ser positivo")
     @NotNull
     private BigDecimal valor;
 
     @NotNull
     private LocalDate data;
 
-    @NotBlank 
+    @NotBlank
     @Size(min = 5, max = 255)
     private String descricao;
 
     @ManyToOne
     private Conta conta;
+
+    public EntityModel<Despesa> toEntityModel(){
+        return EntityModel.of(this, 
+        linkTo(methodOn(DespesaController.class).show(id)).withSelfRel(),
+        linkTo(methodOn(DespesaController.class).destroy(id)).withRel("delete"),
+        linkTo(methodOn(DespesaController.class).index(null, Pageable.unpaged())).withRel("all"),
+        linkTo(methodOn(ContaController.class).show(this.getConta().getId())).withRel("conta")
+        );
+    }
 
 }
