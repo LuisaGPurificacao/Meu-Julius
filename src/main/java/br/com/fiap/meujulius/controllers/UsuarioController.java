@@ -14,11 +14,13 @@ import br.com.fiap.meujulius.models.Token;
 import br.com.fiap.meujulius.models.Usuario;
 import br.com.fiap.meujulius.repository.UsuarioRepository;
 import br.com.fiap.meujulius.service.TokenService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
+@Tag(name = "auth")
 public class UsuarioController {
-    
+
     @Autowired
     private UsuarioRepository repository;
 
